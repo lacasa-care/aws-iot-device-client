@@ -93,6 +93,7 @@ namespace Aws
 
                 static constexpr char JSON_KEY_SAMPLES[] = "samples";
                 static constexpr char JSON_KEY_PUB_SUB[] = "pub-sub";
+                static constexpr char JSON_KEY_DBUS[] = "dbus";
 
                 static constexpr char JSON_KEY_SAMPLE_SHADOW[] = "sample-shadow";
                 static constexpr char JSON_KEY_CONFIG_SHADOW[] = "config-shadow";
@@ -329,6 +330,21 @@ namespace Aws
                     bool publishOnChange{false};
                 };
                 PubSub pubSub;
+
+                struct DBus : public LoadableFromJsonAndCliAndEnvironment
+                {
+                    bool LoadFromJson(const Crt::JsonView &json) override;
+                    bool LoadFromCliArgs(const CliArgs &cliArgs) override;
+                    bool LoadFromEnvironment() override { return true; }
+                    bool Validate() const override;
+                    void SerializeToObject(Crt::JsonObject &object) const;
+
+                    static constexpr char CLI_ENABLE_DBUS[] = "--enable-dbus";
+                    static constexpr char JSON_ENABLE_DBUS[] = "enabled";
+
+                    bool enabled{false};
+                };
+                DBus dBus;
 
                 struct SampleShadow : public LoadableFromJsonAndCliAndEnvironment
                 {

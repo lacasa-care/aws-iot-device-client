@@ -36,9 +36,10 @@
 #endif
 #if !defined(EXCLUDE_SAMPLES)
 #    if !defined(EXCLUDE_PUBSUB)
-
 #        include "samples/pubsub/PubSubFeature.h"
-
+#    endif
+#    if !defined(EXCLUDE_DBUS)
+#        include "samples/dbus/DBusFeature.h"
 #    endif
 #endif
 #if !defined(EXCLUDE_SHADOW)
@@ -509,6 +510,24 @@ int main(int argc, char *argv[])
     {
         LOG_INFO(TAG, "Pub Sub is disabled");
         features->add(PubSubFeature::NAME, nullptr);
+    }
+#    endif
+#endif
+
+#if !defined(EXCLUDE_SAMPLES)
+#    if !defined(EXCLUDE_DBUS)
+    if (config.config.dBus.enabled)
+    {
+        shared_ptr<DBusFeature> dBus;
+        LOG_INFO(TAG, "DBus is enabled");
+        dBus = make_shared<DBusFeature>();
+        dBus->init(resourceManager, listener, config.config);
+        features->add(dBus->getName(), dBus);
+    }
+    else
+    {
+        LOG_INFO(TAG, "DBus is disabled");
+        features->add(DBusFeature::NAME, nullptr);
     }
 #    endif
 #endif

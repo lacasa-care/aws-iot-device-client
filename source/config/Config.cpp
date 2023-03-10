@@ -61,6 +61,7 @@ constexpr char PlainConfig::JSON_KEY_FLEET_PROVISIONING[];
 constexpr char PlainConfig::JSON_KEY_RUNTIME_CONFIG[];
 constexpr char PlainConfig::JSON_KEY_SAMPLES[];
 constexpr char PlainConfig::JSON_KEY_PUB_SUB[];
+constexpr char PlainConfig::JSON_KEY_DBUS[];
 constexpr char PlainConfig::JSON_KEY_SAMPLE_SHADOW[];
 constexpr char PlainConfig::JSON_KEY_CONFIG_SHADOW[];
 constexpr char PlainConfig::JSON_KEY_SECURE_ELEMENT[];
@@ -205,6 +206,13 @@ bool PlainConfig::LoadFromJson(const Crt::JsonView &json)
             temp.LoadFromJson(json.GetJsonObject(jsonKey).GetJsonObject(jsonKeyTwo));
             pubSub = temp;
         }
+        const char *jsonKeyThree = JSON_KEY_DBUS;
+        if (json.GetJsonObject(jsonKey).ValueExists(jsonKeyThree))
+        {
+            DBus temp;
+            temp.LoadFromJson(json.GetJsonObject(jsonKey).GetJsonObject(jsonKeyThree));
+            dBus = temp;
+        }
     }
 
     jsonKey = JSON_KEY_SAMPLE_SHADOW;
@@ -278,7 +286,7 @@ bool PlainConfig::LoadFromCliArgs(const CliArgs &cliArgs)
 
     return logConfig.LoadFromCliArgs(cliArgs) && jobs.LoadFromCliArgs(cliArgs) && tunneling.LoadFromCliArgs(cliArgs) &&
            deviceDefender.LoadFromCliArgs(cliArgs) && fleetProvisioning.LoadFromCliArgs(cliArgs) &&
-           pubSub.LoadFromCliArgs(cliArgs) && sampleShadow.LoadFromCliArgs(cliArgs) &&
+           pubSub.LoadFromCliArgs(cliArgs) && dBus.LoadFromCliArgs(cliArgs) && sampleShadow.LoadFromCliArgs(cliArgs) &&
            configShadow.LoadFromCliArgs(cliArgs) && secureElement.LoadFromCliArgs(cliArgs) &&
            httpProxyConfig.LoadFromCliArgs(cliArgs);
 }
@@ -318,7 +326,7 @@ bool PlainConfig::LoadFromEnvironment()
 
     return logConfig.LoadFromEnvironment() && jobs.LoadFromEnvironment() && tunneling.LoadFromEnvironment() &&
            deviceDefender.LoadFromEnvironment() && fleetProvisioning.LoadFromEnvironment() &&
-           fleetProvisioningRuntimeConfig.LoadFromEnvironment() && pubSub.LoadFromEnvironment() &&
+           fleetProvisioningRuntimeConfig.LoadFromEnvironment() && pubSub.LoadFromEnvironment() && dBus.LoadFromEnvironment() &&
            sampleShadow.LoadFromEnvironment() && configShadow.LoadFromEnvironment();
 }
 
@@ -403,6 +411,12 @@ bool PlainConfig::Validate() const
         return false;
     }
 #endif
+#if !defined(EXCLUDE_DBUS)
+    if (!dBus.Validate())
+    {
+        return false;
+    }
+#endif
 #if !defined(EXCLUDE_SHADOW)
     if (!sampleShadow.Validate() || !configShadow.Validate())
     {
@@ -475,8 +489,11 @@ void PlainConfig::SerializeToObject(Crt::JsonObject &object) const
 
     Crt::JsonObject samplesObject;
     Crt::JsonObject pubSubObject;
+    Crt::JsonObject dbusObject;
     pubSub.SerializeToObject(pubSubObject);
+    dBus.SerializeToObject(dbusObject);
     samplesObject.WithObject(JSON_KEY_PUB_SUB, pubSubObject);
+    samplesObject.WithObject(JSON_KEY_DBUS, dbusObject);
     object.WithObject(JSON_KEY_SAMPLES, samplesObject);
 
     Crt::JsonObject configShadowObject;
@@ -1645,6 +1662,39 @@ void PlainConfig::PubSub::SerializeToObject(Crt::JsonObject &object) const
     }
 }
 
+constexpr char PlainConfig::DBus::CLI_ENABLE_DBUS[];
+constexpr char PlainConfig::DBus::JSON_ENABLE_DBUS[];
+
+bool PlainConfig::DBus::LoadFromJson(const Crt::JsonView &json)
+{
+    const char *jsonKey = JSON_ENABLE_DBUS;
+    if (json.ValueExists(jsonKey))
+    {
+        enabled = json.GetBool(jsonKey);
+    }
+
+    return true;
+}
+
+bool PlainConfig::DBus::LoadFromCliArgs(const CliArgs &cliArgs)
+{
+    if (cliArgs.count(PlainConfig::DBus::CLI_ENABLE_DBUS))
+    {
+        enabled = cliArgs.at(CLI_ENABLE_DBUS).compare("true") == 0;
+    }
+    return true;
+}
+
+bool PlainConfig::DBus::Validate() const
+{
+    return true;
+}
+
+void PlainConfig::DBus::SerializeToObject(Crt::JsonObject &object) const
+{
+    object.WithBool(JSON_ENABLE_DBUS, enabled);
+}
+
 constexpr char PlainConfig::SampleShadow::CLI_ENABLE_SAMPLE_SHADOW[];
 constexpr char PlainConfig::SampleShadow::CLI_SAMPLE_SHADOW_NAME[];
 constexpr char PlainConfig::SampleShadow::CLI_SAMPLE_SHADOW_INPUT_FILE[];
@@ -2560,6 +2610,8 @@ bool Config::ParseCliArgs(int argc, char **argv, CliArgs &cliArgs)
         {PlainConfig::PubSub::CLI_PUB_SUB_PUBLISH_FILE, true, nullptr},
         {PlainConfig::PubSub::CLI_PUB_SUB_SUBSCRIBE_TOPIC, true, nullptr},
         {PlainConfig::PubSub::CLI_PUB_SUB_SUBSCRIBE_FILE, true, nullptr},
+
+        {PlainConfig::DBus::CLI_ENABLE_DBUS, true, nullptr},
 
         {PlainConfig::SampleShadow::CLI_ENABLE_SAMPLE_SHADOW, true, nullptr},
         {PlainConfig::SampleShadow::CLI_SAMPLE_SHADOW_NAME, true, nullptr},
