@@ -203,7 +203,6 @@ target_compile_definitions(${DC_PROJECT_NAME} PRIVATE "-DDEBUG_BUILD")
 ## We need to add the project binary directory to the list of include directories
 ## for passing the version information down to the executable
 include_directories("${PROJECT_BINARY_DIR}")
-include_directories(/usr/include/dbus-1.0)
 
 if (MSVC)
     target_compile_options(${DC_PROJECT_NAME} PRIVATE /W4 /WX)
@@ -228,7 +227,7 @@ if (NOT EXCLUDE_PUBSUB)
 endif ()
 
 if (NOT EXCLUDE_DBUS)
-    set(DEP_DC_LIBS ${DEP_DC_LIBS} IotDeviceCommon-cpp aws-c-iot dbus-1)
+    set(DEP_DC_LIBS ${DEP_DC_LIBS} IotDeviceCommon-cpp aws-c-iot zmq)
 endif ()
 
 if (NOT EXCLUDE_SAMPLE_SHADOW)

@@ -1664,6 +1664,10 @@ void PlainConfig::PubSub::SerializeToObject(Crt::JsonObject &object) const
 
 constexpr char PlainConfig::DBus::CLI_ENABLE_DBUS[];
 constexpr char PlainConfig::DBus::JSON_ENABLE_DBUS[];
+constexpr char PlainConfig::DBus::JSON_DBUS_SUB_TOPIC[];
+constexpr char PlainConfig::DBus::JSON_DBUS_SUB_PORT[];
+constexpr char PlainConfig::DBus::JSON_DBUS_PUB_TOPIC[];
+constexpr char PlainConfig::DBus::JSON_DBUS_PUB_PORT[];
 
 bool PlainConfig::DBus::LoadFromJson(const Crt::JsonView &json)
 {
@@ -1671,6 +1675,64 @@ bool PlainConfig::DBus::LoadFromJson(const Crt::JsonView &json)
     if (json.ValueExists(jsonKey))
     {
         enabled = json.GetBool(jsonKey);
+    }
+
+    if (enabled) {        
+        jsonKey = JSON_DBUS_SUB_TOPIC;
+        if (json.ValueExists(jsonKey))
+        {
+            if (!json.GetString(jsonKey).empty())
+            {
+                subTopic = json.GetString(jsonKey).c_str();
+            }
+            else
+            {
+                LOGM_WARN(
+                    Config::TAG, "Key {%s} was provided in the JSON configuration file with an empty value", jsonKey);
+            }
+        }
+
+        jsonKey = JSON_DBUS_SUB_PORT;
+        if (json.ValueExists(jsonKey))
+        {
+            if (!json.GetString(jsonKey).empty())
+            {
+                subPort = json.GetString(jsonKey).c_str();
+            }
+            else
+            {
+                LOGM_WARN(
+                    Config::TAG, "Key {%s} was provided in the JSON configuration file with an empty value", jsonKey);
+            }
+        }
+
+        jsonKey = JSON_DBUS_PUB_TOPIC;
+        if (json.ValueExists(jsonKey))
+        {
+            if (!json.GetString(jsonKey).empty())
+            {
+                pubTopic = json.GetString(jsonKey).c_str();
+            }
+            else
+            {
+                LOGM_WARN(
+                    Config::TAG, "Key {%s} was provided in the JSON configuration file with an empty value", jsonKey);
+            }
+        }
+
+        jsonKey = JSON_DBUS_PUB_PORT;
+        if (json.ValueExists(jsonKey))
+        {
+            if (!json.GetString(jsonKey).empty())
+            {
+                pubPort = json.GetString(jsonKey).c_str();
+            }
+            else
+            {
+                LOGM_WARN(
+                    Config::TAG, "Key {%s} was provided in the JSON configuration file with an empty value", jsonKey);
+            }
+        }
     }
 
     return true;
@@ -1687,12 +1749,64 @@ bool PlainConfig::DBus::LoadFromCliArgs(const CliArgs &cliArgs)
 
 bool PlainConfig::DBus::Validate() const
 {
+    if (!pubTopic.has_value() || pubTopic->empty())
+    {
+        LOGM_ERROR(
+            Config::TAG,
+            "*** %s: Publish Topic field must be specified if DBus sample feature is enabled ***",
+            DeviceClient::DC_FATAL_ERROR);
+        return false;
+    }
+    if (!pubPort.has_value() || pubPort->empty())
+    {
+        LOGM_ERROR(
+            Config::TAG,
+            "*** %s: Publish port field must be specified if DBus sample feature is enabled ***",
+            DeviceClient::DC_FATAL_ERROR);
+        return false;
+    }
+    if (!subTopic.has_value() || subTopic->empty())
+    {
+        LOGM_ERROR(
+            Config::TAG,
+            "*** %s: Subscribe Topic field must be specified if DBus sample feature is enabled ***",
+            DeviceClient::DC_FATAL_ERROR);
+        return false;
+    }
+    if (!subPort.has_value() || subPort->empty())
+    {
+        LOGM_ERROR(
+            Config::TAG,
+            "*** %s: Subscribe port field must be specified if DBus sample feature is enabled ***",
+            DeviceClient::DC_FATAL_ERROR);
+        return false;
+    }
+
     return true;
 }
 
 void PlainConfig::DBus::SerializeToObject(Crt::JsonObject &object) const
 {
     object.WithBool(JSON_ENABLE_DBUS, enabled);
+    if (pubTopic.has_value() && pubTopic->c_str())
+    {
+        object.WithString(JSON_DBUS_PUB_TOPIC, pubTopic->c_str());
+    }
+
+    if (pubPort.has_value() && pubPort->c_str())
+    {
+        object.WithString(JSON_DBUS_PUB_PORT, pubPort->c_str());
+    }
+
+    if (subTopic.has_value() && subTopic->c_str())
+    {
+        object.WithString(JSON_DBUS_SUB_TOPIC, subTopic->c_str());
+    }
+
+    if (subPort.has_value() && subPort->c_str())
+    {
+        object.WithString(JSON_DBUS_SUB_PORT, subPort->c_str());
+    }
 }
 
 constexpr char PlainConfig::SampleShadow::CLI_ENABLE_SAMPLE_SHADOW[];

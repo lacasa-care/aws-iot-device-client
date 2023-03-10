@@ -5,13 +5,14 @@
 #define DEVICE_CLIENT_AWSIOTFEATURE_H
 
 #include <aws/iot/MqttClient.h>
+#include <dbus/dbus.h>
+#include <zmq.h>
 
 #include "../../ClientBaseNotifier.h"
 #include "../../Feature.h"
 #include "../../SharedCrtResourceManager.h"
 #include "../../config/Config.h"
 #include "../../util/FileUtils.h"
-#include <dbus/dbus.h>
 
 namespace Aws
 {
@@ -75,9 +76,19 @@ namespace Aws
                      */
                     DBusConnection* conn;
                     /**
-                     * \brief A DBus monitor observing calls.
+                     * \brief A send thread.
                      */
-                    void runDBusMonitor();
+                    void run();
+
+                    void *subContext;
+                    void *subResponder;
+                    std::string subTopic;
+                    std::string subPort;
+
+                    void *pubContext;
+                    void *pubResponder;
+                    std::string pubTopic;
+                    std::string pubPort;
 
                 };
             } // namespace Samples
