@@ -341,16 +341,14 @@ namespace Aws
 
                     static constexpr char CLI_ENABLE_DBUS[] = "--enable-dbus";
                     static constexpr char JSON_ENABLE_DBUS[] = "enabled";
-                    static constexpr char JSON_DBUS_SUB_TOPIC[] = "sub-topic";
-                    static constexpr char JSON_DBUS_SUB_PORT[] = "sub-port";
-                    static constexpr char JSON_DBUS_PUB_TOPIC[] = "pub-topic";
-                    static constexpr char JSON_DBUS_PUB_PORT[] = "pub-port";
+                    static constexpr char JSON_DBUS_OUTBOUND_TOPIC[] = "outbound-topic";
+                    static constexpr char JSON_DBUS_INBOUND_TOPIC[] = "inbound-topic";
+                    static constexpr char JSON_DBUS_PORT[] = "port";
 
                     bool enabled{false};
-                    Aws::Crt::Optional<std::string> pubTopic;
-                    Aws::Crt::Optional<std::string> pubPort;
-                    Aws::Crt::Optional<std::string> subTopic;
-                    Aws::Crt::Optional<std::string> subPort;
+                    Aws::Crt::Optional<std::string> outboundTopic;
+                    Aws::Crt::Optional<std::string> inboundTopic;
+                    Aws::Crt::Optional<std::string> port;
                 };
                 DBus dBus;
 

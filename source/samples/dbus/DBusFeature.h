@@ -80,15 +80,11 @@ namespace Aws
                      */
                     void run();
 
-                    void *subContext;
-                    void *subResponder;
-                    std::string subTopic;
-                    std::string subPort;
-
-                    void *pubContext;
-                    void *pubResponder;
-                    std::string pubTopic;
-                    std::string pubPort;
+                    void *context;
+                    void *responder;
+                    std::string inboundTopic;
+                    std::string outboundTopic;
+                    std::string port;
 
                 };
             } // namespace Samples
